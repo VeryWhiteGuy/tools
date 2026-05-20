@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rise XLIFF Translation Tool</title>
+<meta name="description" content="A browser-based tool that lets machines parse Articulate Rise 360's XLIFF so humans can translate in Excel, CSV, or any CAT tool — then rebuilds the translated XLIFF for re-import.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F2EDE3;
+  --bg-card: #FBF7EF;
+  --bg-soft: #ECE5D6;
+  --ink: #1E2620;
+  --ink-soft: #495149;
+  --ink-muted: #8A8273;
+  --forest: #2D4A35;
+  --forest-deep: #1F3325;
+  --terracotta: #B5612D;
+  --rust: #8B4423;
+  --border: #D4CCBC;
+  --border-soft: #E5DECE;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'IBM Plex Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.55;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(45, 74, 53, 0.025) 1px, transparent 1px),
+    radial-gradient(circle at 80% 70%, rgba(181, 97, 45, 0.025) 1px, transparent 1px);
+  background-size: 28px 28px;
+  background-position: 0 0, 14px 14px;
+}
+
+main { max-width: 760px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+/* ─── MASTHEAD ─── */
+.masthead {
+  text-align: center;
+  padding: 2.5rem 0 3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 3rem;
+  position: relative;
+}
+.masthead::before, .masthead::after {
+  content: ''; position: absolute; bottom: -1px;
+  width: 60px; height: 1px; background: var(--terracotta);
+}
+.masthead::before { left: 50%; margin-left: -80px; }
+.masthead::after { left: 50%; margin-left: 20px; }
+.ornament {
+  font-family: 'Fraunces', serif;
+  font-size: 1.25rem;
+  color: var(--terracotta);
+  margin-bottom: 1rem;
+  letter-spacing: 0.5em;
+  padding-left: 0.5em;
+}
+.masthead h1 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(2.5rem, 7vw, 3.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  font-variation-settings: 'opsz' 144;
+  color: var(--forest-deep);
+}
+.masthead h1 em {
+  font-style: italic; font-weight: 500;
+  color: var(--terracotta);
+  font-variation-settings: 'opsz' 144;
+}
+.masthead .tagline {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  color: var(--ink-soft);
+  margin-top: 0.875rem;
+  max-width: 580px;
+  margin-left: auto; margin-right: auto;
+  font-variation-settings: 'opsz' 24;
+  line-height: 1.4;
+}
+.masthead .tagline em { color: var(--terracotta); font-style: italic; }
+.masthead .meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--ink-muted);
+  margin-top: 1.5rem;
+}
+
+/* ─── SECTION STRUCTURE ─── */
+.section { margin-bottom: 3rem; }
+.section-head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+.kicker {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--terracotta);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+.section-head h2 {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(1.5rem, 4vw, 1.85rem);
+  color: var(--forest-deep);
+  font-variation-settings: 'opsz' 48;
+  letter-spacing: -0.01em;
+}
+.section-head h2 em { color: var(--terracotta); font-style: italic; }
+
+/* ─── PROSE ─── */
+.lead {
+  font-family: 'Fraunces', serif;
+  font-weight: 400;
+  font-size: 1.15rem;
+  line-height: 1.55;
+  color: var(--ink);
+  font-variation-settings: 'opsz' 24;
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto 2rem;
+}
+.lead em { font-style: italic; color: var(--terracotta); }
+.lead-left { text-align: left; max-width: none; }
+.prose {
+  font-size: 1rem;
+  color: var(--ink-soft);
+  margin-bottom: 1rem;
+  line-height: 1.65;
+}
+.prose strong { color: var(--ink); font-weight: 600; }
+.prose code {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg-soft);
+  padding: 0.08rem 0.35rem;
+  border-radius: 2px;
+  font-size: 0.88em;
+  color: var(--forest-deep);
+}
+.prose:last-child { margin-bottom: 0; }
+
+/* ─── CARD ─── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  padding: 1.75rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02), 0 4px 14px rgba(31, 51, 37, 0.04);
+}
+
+/* ─── STEPS ─── */
+.step {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+  align-items: start;
+}
+.step-num {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 2.75rem;
+  color: var(--terracotta);
+  font-variation-settings: 'opsz' 72;
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  width: 3.5rem;
+  text-align: right;
+  padding-top: 0.15rem;
+}
+.step-body { min-width: 0; }
+.step-title {
+  font-family: 'Fraunces', serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--forest-deep);
+  font-variation-settings: 'opsz' 36;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.01em;
+}
+.step-actor {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--ink-muted);
+  margin-bottom: 0.7rem;
+}
+.step-text {
+  font-size: 0.98rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+}
+.step-text:last-child { margin-bottom: 0; }
+.step-text code {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg-soft);
+  padding: 0.08rem 0.35rem;
+  border-radius: 2px;
+  font-size: 0.88em;
+  color: var(--forest-deep);
+}
+.step-text strong { color: var(--ink); font-weight: 600; }
+
+.step-aside {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--terracotta);
+  margin-top: 0.75rem;
+  font-variation-settings: 'opsz' 18;
+}
+
+/* ─── SHOTS ─── */
+.shot { margin: 1.25rem 0 0.5rem; }
+.shot-frame {
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  padding: 0.5rem;
+  border-radius: 2px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02), 0 8px 24px rgba(31, 51, 37, 0.06);
+}
+.shot-frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 1px;
+}
+.shot-cap {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--ink-muted);
+  margin-top: 0.625rem;
+  text-align: center;
+}
+.shot-stack .shot + .shot { margin-top: 1.5rem; }
+
+/* ─── SPREADSHEET COLUMNS TABLE ─── */
+.cols-table {
+  width: 100%;
+  margin-top: 1rem;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+.cols-table th, .cols-table td {
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px dotted var(--border);
+}
+.cols-table th {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--ink-muted);
+  font-weight: 500;
+  background: var(--bg-soft);
+}
+.cols-table td:first-child {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--terracotta);
+  font-weight: 500;
+  width: 3rem;
+}
+.cols-table td code {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85em;
+  background: var(--bg-soft);
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  color: var(--forest-deep);
+}
+
+/* ─── FEATURE GRID ─── */
+.features {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem 1.5rem;
+  margin-top: 1.5rem;
+}
+.feature {
+  padding: 1rem 0 0;
+  border-top: 1px dotted var(--border);
+}
+.feature h3 {
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--forest-deep);
+  font-variation-settings: 'opsz' 18;
+  margin-bottom: 0.35rem;
+  letter-spacing: -0.005em;
+}
+.feature p {
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.feature p code {
+  font-family: 'IBM Plex Mono', monospace;
+  background: var(--bg-soft);
+  padding: 0.05rem 0.3rem;
+  border-radius: 2px;
+  font-size: 0.88em;
+  color: var(--forest-deep);
+}
+
+/* ─── AUDIENCE LIST ─── */
+.audience-list {
+  list-style: none;
+  padding: 0;
+  font-family: 'Fraunces', serif;
+  font-size: 1.05rem;
+  color: var(--ink);
+  font-variation-settings: 'opsz' 18;
+  line-height: 1.5;
+}
+.audience-list li {
+  padding: 0.65rem 0;
+  border-bottom: 1px dotted var(--border);
+  position: relative;
+  padding-left: 1.5rem;
+}
+.audience-list li::before {
+  content: '·';
+  position: absolute;
+  left: 0.4rem;
+  color: var(--terracotta);
+  font-size: 1.3rem;
+  line-height: 1;
+  top: 0.85rem;
+}
+.audience-list li:last-child { border-bottom: none; }
+
+/* ─── DOWNLOAD CTA ─── */
+.download-section {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  margin: 2.5rem 0 1.5rem;
+  position: relative;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.02), 0 6px 20px rgba(31, 51, 37, 0.05);
+}
+.download-section .ornament { margin-bottom: 0.5rem; }
+.download-section h2 {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: clamp(1.85rem, 5vw, 2.25rem);
+  color: var(--forest-deep);
+  font-variation-settings: 'opsz' 60;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+}
+.download-section h2 em { font-style: italic; color: var(--terracotta); font-weight: 500; }
+.download-section .lead { margin-bottom: 1.5rem; }
+.btn {
+  display: inline-block;
+  padding: 1rem 2.25rem;
+  background: var(--forest-deep);
+  color: #F7F2E8;
+  border: none;
+  border-radius: 2px;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.98rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.05s;
+}
+.btn:hover { background: var(--forest); }
+.btn:active { transform: translateY(1px); }
+.password-note {
+  margin-top: 1.25rem;
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  font-variation-settings: 'opsz' 14;
+  line-height: 1.5;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── PULL QUOTE ─── */
+.pullquote {
+  font-family: 'Fraunces', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 1.25rem;
+  line-height: 1.45;
+  color: var(--forest-deep);
+  text-align: center;
+  padding: 1.5rem 1rem;
+  margin: 2rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-variation-settings: 'opsz' 24;
+  position: relative;
+}
+.pullquote::before, .pullquote::after {
+  content: ''; position: absolute;
+  width: 40px; height: 1px; background: var(--terracotta);
+}
+.pullquote::before { top: -1px; left: 50%; margin-left: -20px; }
+.pullquote::after { bottom: -1px; left: 50%; margin-left: -20px; }
+.pullquote em { color: var(--terracotta); }
+
+/* ─── FOOTER ─── */
+footer {
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 2rem;
+  border-top: 1px dotted var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--ink-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1.7;
+}
+footer .ornament { font-size: 0.9rem; margin-bottom: 0.5rem; letter-spacing: 0.5em; }
+footer a { color: var(--ink-soft); text-decoration: none; border-bottom: 1px dotted var(--border); }
+
+/* ─── MEDIA QUERIES ─── */
+@media (max-width: 620px) {
+  main { padding: 1.5rem 1.125rem 4rem; }
+  .card { padding: 1.25rem; }
+  .step { gap: 0.875rem; grid-template-columns: auto 1fr; }
+  .step-num { font-size: 2.25rem; width: 2.5rem; }
+  .features { grid-template-columns: 1fr; gap: 1rem; }
+  .download-section { padding: 2rem 1.25rem; }
+  .cols-table th, .cols-table td { padding: 0.5rem 0.5rem; font-size: 0.85rem; }
+}
+</style>
+</head>
+<body>
+<main>
+
+  <header class="masthead">
+    <div class="ornament">· ❦ ·</div>
+    <h1>Rise XLIFF<br><em>Translation Tool</em></h1>
+    <p class="tagline">Translation is <em>for humans</em>, not machines.</p>
+    <p class="meta">RJCOLLAB+ · LM Consulting · v1.0</p>
+  </header>
+
+  <!-- LEAD -->
+  <section class="section">
+    <p class="lead">A browser-based tool that lets machines do what they do well &mdash; parse Articulate Rise 360's XLIFF, reformat structure, validate the result &mdash; so translators can do what humans have done <em>since the Rosetta Stone:</em> read meaning, write meaning, in the language they speak.</p>
+    <div class="shot">
+      <div class="shot-frame">
+        <img src="screenshots/01-start-screen.png" alt="The Rise XLIFF Translation Tool home screen with the Extract for Translation tab active and a file drop zone">
+      </div>
+      <div class="shot-cap">The tool, on open</div>
+    </div>
+  </section>
+
+  <!-- PROBLEM -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">The problem</span>
+      <h2>Rise exports an XLIFF nobody enjoys translating.</h2>
+    </div>
+    <div class="card">
+      <p class="prose">Articulate Rise 360 has a paid translation service &mdash; and an XLIFF export for everyone who doesn't pay for it. The export is technically a standard XLIFF file. In practice, it's structured in a way that makes life hard for almost everyone who tries to use it.</p>
+      <p class="prose">Within each segment, Rise wraps paragraph and inline content in <code>&lt;g&gt;</code> tags. CAT tools &mdash; Trados, memoQ, MateCat, Phrase &mdash; read every <code>&lt;g&gt;</code> tag as inline formatting that must be preserved verbatim. But Rise uses them for two different things at once: paragraph structure (which a translator shouldn't have to think about) and inline emphasis (which they should). Translators get walls of tagged text without an easy way to tell what's safe to ignore.</p>
+      <p class="prose">The downstream symptoms show up across Articulate's own community forums: silent import failures where the course re-imports successfully but stays in the original language, dropped paragraph structure, formatting drift. Articulate's own support staff has noted publicly that manual translation of the raw XLIFF is the most common cause of failed re-imports.</p>
+      <p class="prose">The practical effect: small teams without a CAT-tool licensing budget end up either paying Articulate's translation service, paying a vendor who specializes in XLIFF, or just not translating their course.</p>
+    </div>
+  </section>
+
+  <!-- PREMISE -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">The premise</span>
+      <h2>Let the machine handle the structure. Let the <em>human</em> translate.</h2>
+    </div>
+    <p class="lead lead-left">This tool inverts the workflow. The machine parses the XLIFF and rebuilds it. The human translates. The translator never sees XML.</p>
+    <p class="prose">Three markers do all the formatting work: <code>**bold**</code>, <code>[BR]</code> for line break, <code>[P]</code> for paragraph break. The translator preserves them around their translated words. That's the entire learning curve.</p>
+    <p class="prose">It's a small idea with a clear consequence: anyone who can work in a spreadsheet can now translate a Rise course. The pool of possible translators expands from <em>"can work with XLIFF"</em> to <em>"can work with a spreadsheet."</em></p>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>Four steps, one round trip.</h2>
+    </div>
+
+    <article class="step">
+      <div class="step-num">01</div>
+      <div class="step-body">
+        <h3 class="step-title">In Rise</h3>
+        <div class="step-actor">Course developer</div>
+        <p class="step-text">Click <strong>Settings</strong> (upper right) on your Rise course. Open the <strong>Translations</strong> tab. Make sure <strong>Keep HTML formatting</strong> is checked. Export the course as XLIFF. You get a <code>.xlf</code> file.</p>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-num">02</div>
+      <div class="step-body">
+        <h3 class="step-title">In the tool</h3>
+        <div class="step-actor">Course developer</div>
+        <p class="step-text">Open the tool in any browser. Click the file area to add your <code>.xlf</code>. The tool parses it, shows every translatable segment with its content type (title, heading, body, button, hint, card front, card back), counts the formatting that needs preserving, and offers a download of the translator-ready spreadsheet.</p>
+        <div class="shot">
+          <div class="shot-frame">
+            <img src="screenshots/02-extract-success.png" alt="Tool after a successful XLIFF import showing 102 total segments, 12 with bold, 2 with line breaks, 5 multi-paragraph, with a table preview of extracted English text by type">
+          </div>
+          <div class="shot-cap">After import &mdash; stats and a per-segment preview</div>
+        </div>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-num">03</div>
+      <div class="step-body">
+        <h3 class="step-title">In Excel, CSV, or a CAT tool</h3>
+        <div class="step-actor">Translator</div>
+        <p class="step-text">Open the spreadsheet. The first tab is the <strong>Instructions</strong> sheet &mdash; plain-language rules written for the translator. The second tab is the work itself:</p>
+        <table class="cols-table">
+          <thead>
+            <tr><th>Col</th><th>Contents</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>A</td><td>Row number</td></tr>
+            <tr><td>B</td><td>English text, with <code>**</code> around bold words and <code>[BR]</code> / <code>[P]</code> for breaks</td></tr>
+            <tr><td>C</td><td>Empty cell for the translation</td></tr>
+            <tr><td>D</td><td>Type label and notes (e.g. <code>heading ⚠️ KEEP ** for bold</code>, <code>card back ⚠️ KEEP [P]</code>)</td></tr>
+          </tbody>
+        </table>
+        <p class="step-text" style="margin-top:1rem;">Translate in Column C. Don't worry about XLIFF. Don't worry about tags. Keep the <code>**</code>, <code>[BR]</code>, and <code>[P]</code> markers around the equivalent translated words. That's the whole job.</p>
+        <div class="shot-stack">
+          <div class="shot">
+            <div class="shot-frame">
+              <img src="screenshots/03-spreadsheet-instructions.jpg" alt="Excel spreadsheet open to the Instructions tab with translation rules and formatting marker explanations">
+            </div>
+            <div class="shot-cap">Instructions tab &mdash; the translator's briefing, built in</div>
+          </div>
+          <div class="shot">
+            <div class="shot-frame">
+              <img src="screenshots/04-spreadsheet-empty.jpg" alt="Excel spreadsheet Translation tab showing rows of English text in Column B, an empty target language column, and a Type column with values like title, body, heading, button">
+            </div>
+            <div class="shot-cap">Translation tab &mdash; ready for the translator</div>
+          </div>
+          <div class="shot">
+            <div class="shot-frame">
+              <img src="screenshots/05-spreadsheet-filled.png" alt="Excel spreadsheet with completed Spanish translations side by side with English source text">
+            </div>
+            <div class="shot-cap">Once filled in &mdash; side by side, easy to review</div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <article class="step">
+      <div class="step-num">04</div>
+      <div class="step-body">
+        <h3 class="step-title">Back in the tool</h3>
+        <div class="step-actor">Course developer</div>
+        <p class="step-text">Click to add the original <code>.xlf</code> and the completed spreadsheet (XLSX or CSV). The tool rebuilds the XLIFF with translated targets, validates the result, and offers a translated <code>.xlf</code> you re-import to Rise.</p>
+        <div class="shot">
+          <div class="shot-frame">
+            <img src="screenshots/06-reassemble-success.png" alt="Reassemble tab showing successful reassembly: 148 segments translated, 1 left empty, 148 target elements created, XML valid, with a green Download Translated XLIFF button">
+          </div>
+          <div class="shot-cap">Reassembly complete &mdash; valid XML, ready to import</div>
+        </div>
+        <p class="step-aside">&mdash; It's that easy.</p>
+      </div>
+    </article>
+  </section>
+
+  <!-- QUALITY CONTROL -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">Quality control</span>
+      <h2>A check on structure, on missing rows, on missing translation.</h2>
+    </div>
+    <p class="prose">The reassemble step doesn't just rebuild the XLIFF. It inspects what came back. If a row is missing, if a cell was left untranslated, if a <code>**</code> or <code>[P]</code> or <code>[BR]</code> marker was dropped &mdash; the tool flags the exact row before you download anything.</p>
+    <p class="prose">It works in both directions. Course developers use it to catch problems before re-importing to Rise. Translators use it on their own work as a pre-submit check: nothing missing, nothing broken, before sending the file back to the client.</p>
+    <div class="shot">
+      <div class="shot-frame">
+        <img src="screenshots/07-validation-warnings.png" alt="Reassemble tab showing reassembly complete with a yellow warnings panel listing specific row numbers where bold markers, paragraph breaks, or line breaks were dropped from the translation">
+      </div>
+      <div class="shot-cap">Validation flags missing markers and missing rows, row by row</div>
+    </div>
+  </section>
+
+  <!-- CAT TOOL BRIDGE -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">For translators with CAT tools</span>
+      <h2>A bridge, not a replacement.</h2>
+    </div>
+    <p class="prose">If your translator already lives in Trados, memoQ, Phrase, or another CAT tool, the spreadsheet works the same way. Save it as CSV, import to the CAT tool, translate with their translation memory and glossary intact, export back to CSV (or XLSX) for the reassembly step.</p>
+    <p class="prose">The result: the translator keeps their workflow, their TM, and their QA &mdash; but they're not fighting Rise's <code>&lt;g&gt;</code>-tag structure to get there. Bold reduces to <code>**</code>. Paragraph breaks reduce to <code>[P]</code>. The tags they have to preserve are minimal and obvious.</p>
+  </section>
+
+  <!-- PULL QUOTE -->
+  <p class="pullquote">From <em>"can work with XLIFF"</em><br>to <em>"can work with a spreadsheet."</em></p>
+
+  <!-- FEATURES -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">Features</span>
+      <h2>What's in the box.</h2>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <h3>Segment type labels</h3>
+        <p>Every row is tagged: title, heading, body, button, hint, card front, card back, prompt. Translators get context.</p>
+      </div>
+      <div class="feature">
+        <h3>Formatting markers</h3>
+        <p>Bold wrapped in <code>**</code>. Line breaks as <code>[BR]</code>. Paragraph breaks as <code>[P]</code>. Plain text, easy to preserve.</p>
+      </div>
+      <div class="feature">
+        <h3>Built-in instructions tab</h3>
+        <p>The downloaded spreadsheet has an Instructions sheet. Translators don't need a separate brief.</p>
+      </div>
+      <div class="feature">
+        <h3>Per-row marker warnings</h3>
+        <p>Column D notes the rows that contain bold or paragraph breaks, with a <code>⚠️ KEEP</code> reminder where it matters.</p>
+      </div>
+      <div class="feature">
+        <h3>Marker validation</h3>
+        <p>Missing <code>**</code>, <code>[BR]</code>, or <code>[P]</code> are flagged by row number on reassembly.</p>
+      </div>
+      <div class="feature">
+        <h3>Missing-row detection</h3>
+        <p>If the row count doesn't match between the XLIFF and the spreadsheet, the tool tells you exactly where.</p>
+      </div>
+      <div class="feature">
+        <h3>XML integrity check</h3>
+        <p>The final XLIFF is parsed to confirm it's well-formed before download.</p>
+      </div>
+      <div class="feature">
+        <h3>Extract stats</h3>
+        <p>Segment counts, bold counts, structural complexity. Useful for scoping and quoting a job.</p>
+      </div>
+      <div class="feature">
+        <h3>CAT-tool compatible</h3>
+        <p>Spreadsheet output works with Trados, memoQ, Phrase, MateCat &mdash; anything that reads CSV or XLSX.</p>
+      </div>
+      <div class="feature">
+        <h3>Runs in the browser</h3>
+        <p>No server, no upload, no account. Course content stays on your machine. No install.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHO IT'S FOR -->
+  <section class="section">
+    <div class="section-head">
+      <span class="kicker">Built for</span>
+      <h2>When the translation <em>matters</em>.</h2>
+    </div>
+    <div class="card">
+      <p class="prose">Built for the case where the right translator isn't the one with the CAT tool &mdash; it's the one who knows the domain. NGOs and non-profits with bilingual subject-matter experts on staff. Health programs whose community workers speak both languages and know the material cold. Faith-based organizations, legal aid groups, advocacy networks &mdash; anywhere that knowing the field matters more than owning translation software.</p>
+      <p class="prose">This tool lets a Rise course developer choose a translator by domain expertise instead of by software stack.</p>
+      <ul class="audience-list">
+        <li>Articulate Rise 360 developers translating content where accuracy of meaning matters more than throughput speed</li>
+        <li>Small L&amp;D teams without a localization workflow, with content worth translating well</li>
+        <li>NGOs and non-profits with bilingual domain experts already on staff</li>
+        <li>Public health, legal aid, faith-based, and advocacy programs translating training for the communities they serve</li>
+        <li>Independent instructional designers choosing translators by domain fit</li>
+        <li>Translators who'd rather work in Excel &mdash; or in a CAT tool with cleaner inputs</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD CTA -->
+  <section class="download-section">
+    <div class="ornament">· ❦ ·</div>
+    <h2>Get the <em>tool</em></h2>
+    <p class="lead">Download the single-file HTML. Open it in a browser. Start translating.</p>
+    <a href="https://www.mediafire.com/file_premium/b0ynhcfbmhgwuu0/RiseXLIFF_Translation_Tool.html/file" class="btn" target="_blank" rel="noopener noreferrer">Download the tool</a>
+    <p class="password-note">Access is gated by a one-time password. Contact for purchase and password details.</p>
+  </section>
+
+  <footer>
+    <div class="ornament">· ❦ ·</div>
+    RJCOLLAB+ &middot; LM Consulting<br>
+    Part of <a href="https://verywhiteguy.github.io/tools/">verywhiteguy.github.io/tools</a>
+  </footer>
+
+</main>
+</body>
+</html>
