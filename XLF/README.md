@@ -2,7 +2,7 @@
 
 This folder is the public showcase page for the **Rise XLIFF Translation Tool**, a browser-based utility that turns Articulate Rise 360 XLIFF exports into translator-friendly Excel spreadsheets and reassembles them back into valid XLIFF for re-import.
 
-The page is served at: **https://verywhiteguy.github.io/tools/XLF/ **
+The page is served at: **https://simplermachines.github.io/tools/XLF/ **
 
 ## What's in this folder
 
